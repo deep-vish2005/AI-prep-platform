@@ -12,6 +12,7 @@ import { Link } from "react-router-dom";
 import MetricCard from "../components/dashboard/MetricCard";
 import PerformanceChart from "../components/dashboard/PerformanceChart";
 import { recentInterviews, recommendedPractice } from "../data/dashboardData";
+import { useAuth } from "../context/AuthContext";
 
 const metrics = [
   {
@@ -60,6 +61,7 @@ function scoreStyle(score) {
 }
 
 function Dashboard() {
+  const { user } = useAuth();
   return (
     <div className="space-y-8">
       <section className="flex flex-col justify-between gap-5 md:flex-row md:items-center">
@@ -69,7 +71,7 @@ function Dashboard() {
           </p>
 
           <h1 className="mt-1 text-3xl font-bold tracking-tight text-ink">
-            Good morning, Deep
+            Good morning, {user?.name?.split(" ")[0] || "there"}
           </h1>
 
           <p className="mt-2 text-muted">

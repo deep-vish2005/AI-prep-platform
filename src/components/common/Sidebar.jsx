@@ -9,7 +9,8 @@ import {
   UserRound,
   X,
 } from "lucide-react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 const primaryNavigation = [
   {
@@ -71,6 +72,16 @@ function NavigationLink({ item, onClick }) {
 }
 
 function Sidebar({ isOpen, onClose }) {
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+
+  const initial = user?.name?.charAt(0).toUpperCase() || "U";
+
+  function handleLogout() {
+    logout();
+    onClose();
+    navigate("/login", { replace: true });
+  }
   return (
     <>
       {isOpen && (
@@ -142,17 +153,21 @@ function Sidebar({ isOpen, onClose }) {
         <div className="border-t border-line p-3">
           <div className="flex items-center gap-3 rounded-xl bg-slate-50 p-3">
             <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-brand-100 text-sm font-bold text-brand-700">
-              D
+              {initial}
             </div>
 
             <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold text-ink">Deep</p>
-              <p className="truncate text-xs text-muted">deep@example.com</p>
+              <p className="truncate text-sm font-semibold text-ink">
+                {user?.name || "User"}
+              </p>
+
+              <p className="truncate text-xs text-muted">{user?.email || ""}</p>
             </div>
 
             <button
               type="button"
               aria-label="Log out"
+              onClick={handleLogout}
               className="rounded-md p-1.5 text-slate-400 hover:bg-white hover:text-danger"
             >
               <LogOut size={17} />
