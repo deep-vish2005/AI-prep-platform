@@ -377,7 +377,7 @@ function LiveInterview() {
   if (sessionLoadError) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-canvas p-6">
-        <div className="w-full max-w-md rounded-xl border border-red-200 bg-white p-6 text-center shadow-sm">
+        <div className="w-full max-w-md rounded-xl border border-red-200 bg-surface p-6 text-center shadow-sm">
           <h1 className="text-lg font-semibold text-ink">
             Unable to resume interview
           </h1>
@@ -398,7 +398,7 @@ function LiveInterview() {
 
   return (
     <div className="min-h-screen bg-canvas">
-      <header className="border-b border-line bg-white">
+      <header className="border-b border-line bg-surface">
         <div className="mx-auto flex h-16 max-w-[1440px] items-center justify-between gap-4 px-4 md:px-6">
           <div className="flex items-center gap-2.5">
             <span className="flex size-9 items-center justify-center rounded-lg bg-brand-600 text-white">
@@ -470,7 +470,7 @@ function LiveInterview() {
 
         <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_300px]">
           <div className="space-y-6">
-            <section className="rounded-xl border border-line bg-white shadow-sm">
+            <section className="rounded-xl border border-line bg-surface shadow-sm">
               <div className="border-b border-line px-5 py-4 md:px-7">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="rounded-md bg-brand-50 px-2.5 py-1 text-xs font-semibold text-brand-700">
@@ -501,7 +501,7 @@ function LiveInterview() {
               </div>
             </section>
 
-            <section className="rounded-xl border border-line bg-white p-5 shadow-sm md:p-7">
+            <section className="rounded-xl border border-line bg-surface p-5 shadow-sm md:p-7">
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <h2 className="font-semibold text-ink">Your answer</h2>
@@ -525,7 +525,7 @@ function LiveInterview() {
                 disabled={isEvaluating || showFeedback}
                 onChange={(event) => setAnswer(event.target.value)}
                 placeholder="Type your answer here..."
-                className="mt-5 min-h-64 w-full resize-y rounded-xl border border-line-strong bg-white p-4 text-sm leading-6 text-ink outline-none transition placeholder:text-slate-400 focus:border-brand-500 focus:ring-4 focus:ring-brand-100 disabled:bg-slate-50"
+                className="mt-5 min-h-64 w-full resize-y rounded-xl border border-line-strong bg-surface p-4 text-sm leading-6 text-ink outline-none transition placeholder:text-slate-400 focus:border-brand-500 focus:ring-4 focus:ring-brand-100 disabled:bg-slate-50"
               />
 
               <div className="mt-2 flex justify-between text-xs text-muted">
@@ -573,7 +573,7 @@ function LiveInterview() {
             </section>
 
             {showFeedback && evaluation && (
-              <section className="rounded-xl border border-brand-100 bg-white shadow-sm">
+              <section className="rounded-xl border border-brand-100 bg-surface shadow-sm">
                 <div className="flex flex-col justify-between gap-4 border-b border-line p-5 sm:flex-row sm:items-center md:px-7">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-wide text-brand-700">
@@ -643,7 +643,7 @@ function LiveInterview() {
           </div>
 
           <aside className="space-y-4 lg:sticky lg:top-6">
-            <section className="rounded-xl border border-line bg-white p-5 shadow-sm">
+            <section className="rounded-xl border border-line bg-surface p-5 shadow-sm">
               <h2 className="font-semibold text-ink">Session details</h2>
 
               <dl className="mt-4 space-y-4">
@@ -670,7 +670,7 @@ function LiveInterview() {
               </dl>
             </section>
 
-            <section className="rounded-xl border border-line bg-white p-5 shadow-sm">
+            <section className="rounded-xl border border-line bg-surface p-5 shadow-sm">
               <div className="flex items-center gap-2">
                 <Target size={18} className="text-brand-700" />
                 <h2 className="font-semibold text-ink">Answer guidance</h2>

@@ -134,21 +134,21 @@ function History() {
       )}
 
       <section className="grid gap-4 sm:grid-cols-3">
-        <article className="rounded-xl border border-line bg-white p-5 shadow-sm">
+        <article className="rounded-xl border border-line bg-surface p-5 shadow-sm">
           <p className="text-sm font-medium text-muted">Total sessions</p>
           <p className="mt-2 text-3xl font-bold text-ink">
             {interviews.length}
           </p>
         </article>
 
-        <article className="rounded-xl border border-line bg-white p-5 shadow-sm">
+        <article className="rounded-xl border border-line bg-surface p-5 shadow-sm">
           <p className="text-sm font-medium text-muted">Average score</p>
           <p className="mt-2 text-3xl font-bold text-ink">
             {averageScore.toFixed(1)}
           </p>
         </article>
 
-        <article className="rounded-xl border border-line bg-white p-5 shadow-sm">
+        <article className="rounded-xl border border-line bg-surface p-5 shadow-sm">
           <p className="text-sm font-medium text-muted">Best score</p>
           <p className="mt-2 text-3xl font-bold text-ink">
             {bestScore.toFixed(1)}
@@ -156,7 +156,7 @@ function History() {
         </article>
       </section>
 
-      <section className="rounded-xl border border-line bg-white shadow-sm">
+      <section className="rounded-xl border border-line bg-surface shadow-sm">
         <div className="flex flex-col gap-4 border-b border-line p-5 md:flex-row md:items-center md:justify-between">
           <div className="relative w-full md:max-w-sm">
             <Search
@@ -182,14 +182,14 @@ function History() {
                 });
               }}
               placeholder="Search by role..."
-              className="h-10 w-full rounded-lg border border-line bg-slate-50 pl-9 pr-3 text-sm outline-none focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-100"
+              className="h-10 w-full rounded-lg border border-line bg-slate-50 pl-9 pr-3 text-sm outline-none focus:border-brand-500 focus:bg-surface focus:ring-4 focus:ring-brand-100"
             />
           </div>
 
           <select
             value={format}
             onChange={(event) => setFormat(event.target.value)}
-            className="h-10 rounded-lg border border-line bg-white px-3 text-sm font-medium text-slate-700 outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
+            className="h-10 rounded-lg border border-line bg-surface px-3 text-sm font-medium text-slate-700 outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
           >
             <option value="All">All formats</option>
             <option value="Technical">Technical</option>

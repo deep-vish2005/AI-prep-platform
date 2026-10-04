@@ -95,7 +95,7 @@ function Sidebar({ isOpen, onClose }) {
 
       <aside
         className={[
-          "fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-line bg-white transition-transform duration-200",
+          "fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-line bg-surface transition-transform duration-200",
           isOpen ? "translate-x-0" : "-translate-x-full",
           "lg:translate-x-0",
         ].join(" ")}
@@ -168,7 +168,7 @@ function Sidebar({ isOpen, onClose }) {
               type="button"
               aria-label="Log out"
               onClick={handleLogout}
-              className="rounded-md p-1.5 text-slate-400 hover:bg-white hover:text-danger"
+              className="rounded-md p-1.5 text-slate-400 hover:bg-surface hover:text-danger"
             >
               <LogOut size={17} />
             </button>

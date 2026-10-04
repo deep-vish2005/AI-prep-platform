@@ -122,7 +122,7 @@ function Dashboard() {
 
       <PerformanceChart data={analytics?.scoreProgression || []} />
 
-      <section className="rounded-xl border border-line bg-white shadow-sm">
+      <section className="rounded-xl border border-line bg-surface shadow-sm">
         <div className="flex items-center justify-between border-b border-line px-5 py-4 lg:px-6">
           <div>
             <h2 className="text-lg font-semibold text-ink">
@@ -261,7 +261,7 @@ function Dashboard() {
 
         <div className="grid gap-4 lg:grid-cols-3">
           {!isLoading && recommendedPractice.length === 0 && (
-            <div className="rounded-xl border border-dashed border-line-strong bg-white p-8 text-center lg:col-span-3">
+            <div className="rounded-xl border border-dashed border-line-strong bg-surface p-8 text-center lg:col-span-3">
               <p className="text-sm font-medium text-muted">
                 Complete an interview to receive topic recommendations.
               </p>
@@ -270,7 +270,7 @@ function Dashboard() {
           {recommendedPractice.map((item) => (
             <article
               key={item.id}
-              className="flex flex-col rounded-xl border border-line bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+              className="flex flex-col rounded-xl border border-line bg-surface p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
             >
               <div className="flex items-center justify-between gap-3">
                 <span className="rounded-md bg-brand-50 px-2.5 py-1 text-xs font-semibold text-brand-700">

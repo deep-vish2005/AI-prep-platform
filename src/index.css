@@ -15,14 +15,12 @@
   --color-brand-600: #2563eb;
   --color-brand-700: #1d4ed8;
 
-  --color-canvas: #f8fafc;
-  --color-surface: #ffffff;
-
-  --color-ink: #0f172a;
-  --color-muted: #64748b;
-
-  --color-line: #e2e8f0;
-  --color-line-strong: #cbd5e1;
+  --color-canvas: var(--app-canvas);
+  --color-surface: var(--app-surface);
+  --color-ink: var(--app-ink);
+  --color-muted: var(--app-muted);
+  --color-line: var(--app-line);
+  --color-line-strong: var(--app-line-strong);
 
   --color-success: #16a34a;
   --color-warning: #f59e0b;
@@ -30,11 +28,99 @@
 }
 
 :root {
+  --app-canvas: #f8fafc;
+  --app-surface: #ffffff;
+  --app-ink: #0f172a;
+  --app-muted: #64748b;
+  --app-line: #e2e8f0;
+  --app-line-strong: #cbd5e1;
+
   font-family: var(--font-sans);
-  color: #0f172a;
-  background: #f8fafc;
+  color: var(--app-ink);
+  background: var(--app-canvas);
+  color-scheme: light;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
+}
+
+html.dark {
+  --app-canvas: #080c14;
+  --app-surface: #111827;
+  --app-ink: #f8fafc;
+  --app-muted: #94a3b8;
+  --app-line: #263244;
+  --app-line-strong: #3b4759;
+
+  --color-slate-50: #172033;
+  --color-slate-100: #1e293b;
+  --color-slate-200: #334155;
+  --color-slate-300: #475569;
+  --color-slate-400: #94a3b8;
+  --color-slate-500: #cbd5e1;
+  --color-slate-600: #cbd5e1;
+  --color-slate-700: #e2e8f0;
+  --color-slate-800: #f1f5f9;
+  --color-slate-900: #f8fafc;
+  html.dark {
+    --app-canvas: #080c14;
+    --app-surface: #111827;
+    --app-ink: #f8fafc;
+    --app-muted: #94a3b8;
+    --app-line: #263244;
+    --app-line-strong: #3b4759;
+
+    /* Dark-mode brand colours */
+    --color-brand-50: #172554;
+    --color-brand-100: #1e3a8a;
+    --color-brand-500: #60a5fa;
+    --color-brand-600: #3b82f6;
+    --color-brand-700: #93c5fd;
+
+    /* Blue information states */
+    --color-blue-50: #172554;
+    --color-blue-100: #1e3a8a;
+    --color-blue-200: #1d4ed8;
+    --color-blue-700: #93c5fd;
+    --color-blue-800: #bfdbfe;
+    --color-blue-900: #dbeafe;
+
+    /* Green success states */
+    --color-green-50: #052e16;
+    --color-green-100: #14532d;
+    --color-green-200: #166534;
+    --color-green-600: #4ade80;
+    --color-green-700: #86efac;
+    --color-green-800: #bbf7d0;
+    --color-green-900: #dcfce7;
+
+    /* Amber warning states */
+    --color-amber-50: #451a03;
+    --color-amber-100: #78350f;
+    --color-amber-200: #92400e;
+    --color-amber-500: #fbbf24;
+    --color-amber-600: #fbbf24;
+    --color-amber-700: #fcd34d;
+    --color-amber-800: #fde68a;
+    --color-amber-900: #fef3c7;
+
+    /* Red error states */
+    --color-red-50: #450a0a;
+    --color-red-100: #7f1d1d;
+    --color-red-200: #991b1b;
+    --color-red-600: #f87171;
+    --color-red-700: #fca5a5;
+    --color-red-800: #fecaca;
+    --color-red-900: #fee2e2;
+
+    /* Violet chart and category states */
+    --color-violet-50: #2e1065;
+    --color-violet-100: #4c1d95;
+    --color-violet-600: #a78bfa;
+    --color-violet-700: #c4b5fd;
+
+    /* Existing slate overrides remain below */
+  }
+  color-scheme: dark;
 }
 
 * {
@@ -44,14 +130,18 @@
 html {
   min-width: 320px;
   min-height: 100%;
-  background: #f8fafc;
+  background: var(--app-canvas);
 }
 
 body {
   min-width: 320px;
   min-height: 100vh;
   margin: 0;
-  background: #f8fafc;
+  color: var(--app-ink);
+  background: var(--app-canvas);
+  transition:
+    color 180ms ease,
+    background-color 180ms ease;
 }
 
 button,
@@ -78,4 +168,28 @@ a {
 
 #root {
   min-height: 100vh;
+}
+
+.theme-selected {
+  color: #0f172a;
+  background-color: #eff6ff;
+  border-color: #2563eb;
+}
+
+html.dark .theme-selected {
+  color: #f8fafc !important;
+  background-color: #172554 !important;
+  border-color: #60a5fa !important;
+}
+
+html.dark .theme-selected .text-ink {
+  color: #f8fafc !important;
+}
+
+html.dark .theme-selected .text-muted {
+  color: #bfdbfe !important;
+}
+
+html.dark .theme-selected.text-brand-700 {
+  color: #bfdbfe !important;
 }

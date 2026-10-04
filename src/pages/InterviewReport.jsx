@@ -365,7 +365,7 @@ function InterviewReport() {
 
   if (reportError) {
     return (
-      <div className="mx-auto max-w-xl rounded-xl border border-red-200 bg-white p-6 text-center shadow-sm">
+      <div className="mx-auto max-w-xl rounded-xl border border-red-200 bg-surface p-6 text-center shadow-sm">
         <h1 className="font-semibold text-ink">Unable to load report</h1>
 
         <p className="mt-2 text-sm text-red-700">{reportError}</p>
@@ -418,7 +418,7 @@ function InterviewReport() {
           <button
             type="button"
             onClick={downloadReport}
-            className="inline-flex h-10 items-center gap-2 rounded-lg border border-line bg-white px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+            className="inline-flex h-10 items-center gap-2 rounded-lg border border-line bg-surface px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50"
           >
             <Download size={17} />
             Download PDF
@@ -435,7 +435,7 @@ function InterviewReport() {
       </section>
 
       <section className="grid gap-5 lg:grid-cols-[320px_minmax(0,1fr)]">
-        <article className="rounded-xl border border-line bg-white p-6 shadow-sm">
+        <article className="rounded-xl border border-line bg-surface p-6 shadow-sm">
           <p className="text-sm font-semibold text-muted">Overall score</p>
 
           <div className="mt-5 flex items-end gap-2">
@@ -482,7 +482,7 @@ function InterviewReport() {
           </dl>
         </article>
 
-        <article className="rounded-xl border border-line bg-white p-6 shadow-sm">
+        <article className="rounded-xl border border-line bg-surface p-6 shadow-sm">
           <div className="flex items-center gap-3">
             <span className="flex size-10 items-center justify-center rounded-lg bg-brand-50 text-brand-700">
               <BarChart3 size={20} />
@@ -521,7 +521,7 @@ function InterviewReport() {
       </section>
 
       <section className="grid gap-5 lg:grid-cols-2">
-        <article className="rounded-xl border border-green-200 bg-white p-6 shadow-sm">
+        <article className="rounded-xl border border-green-200 bg-surface p-6 shadow-sm">
           <div className="flex items-center gap-3">
             <span className="flex size-10 items-center justify-center rounded-lg bg-green-50 text-green-700">
               <CheckCircle2 size={20} />
@@ -551,7 +551,7 @@ function InterviewReport() {
           </ul>
         </article>
 
-        <article className="rounded-xl border border-amber-200 bg-white p-6 shadow-sm">
+        <article className="rounded-xl border border-amber-200 bg-surface p-6 shadow-sm">
           <div className="flex items-center gap-3">
             <span className="flex size-10 items-center justify-center rounded-lg bg-amber-50 text-amber-700">
               <Target size={20} />
@@ -605,7 +605,7 @@ function InterviewReport() {
         </div>
       </section>
 
-      <section className="rounded-xl border border-line bg-white shadow-sm">
+      <section className="rounded-xl border border-line bg-surface shadow-sm">
         <div className="flex items-center gap-3 border-b border-line p-5 md:px-6">
           <span className="flex size-10 items-center justify-center rounded-lg bg-slate-100 text-slate-700">
             <ClipboardCheck size={20} />

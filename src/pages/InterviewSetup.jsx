@@ -104,8 +104,8 @@ function SelectionCard({ selected, icon: Icon, name, description, onClick }) {
       className={[
         "relative flex min-h-28 w-full items-start gap-4 rounded-xl border p-4 text-left transition",
         selected
-          ? "border-brand-600 bg-brand-50 ring-1 ring-brand-600"
-          : "border-line bg-white hover:border-slate-300 hover:bg-slate-50",
+          ? "theme-selected ring-1 ring-brand-500"
+          : "border-line bg-surface hover:border-slate-300 hover:bg-slate-50",
       ].join(" ")}
     >
       <span
@@ -236,7 +236,7 @@ function InterviewSetup() {
 
       <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
         <div className="space-y-6">
-          <section className="rounded-xl border border-line bg-white p-5 shadow-sm md:p-6">
+          <section className="rounded-xl border border-line bg-surface p-5 shadow-sm md:p-6">
             <div className="mb-5 flex items-center gap-3">
               <span className="flex size-8 items-center justify-center rounded-lg bg-brand-50 text-sm font-bold text-brand-700">
                 1
@@ -264,7 +264,7 @@ function InterviewSetup() {
             </div>
           </section>
 
-          <section className="rounded-xl border border-line bg-white p-5 shadow-sm md:p-6">
+          <section className="rounded-xl border border-line bg-surface p-5 shadow-sm md:p-6">
             <div className="mb-5 flex items-center gap-3">
               <span className="flex size-8 items-center justify-center rounded-lg bg-brand-50 text-sm font-bold text-brand-700">
                 2
@@ -293,8 +293,8 @@ function InterviewSetup() {
                     className={[
                       "rounded-xl border p-4 text-left transition",
                       selected
-                        ? "border-brand-600 bg-brand-50 ring-1 ring-brand-600"
-                        : "border-line bg-white hover:border-slate-300 hover:bg-slate-50",
+                        ? "theme-selected ring-1 ring-brand-500"
+                        : "border-line bg-surface hover:border-slate-300 hover:bg-slate-50",
                     ].join(" ")}
                   >
                     <span className="flex items-center justify-between">
@@ -316,7 +316,7 @@ function InterviewSetup() {
             </div>
           </section>
 
-          <section className="rounded-xl border border-line bg-white p-5 shadow-sm md:p-6">
+          <section className="rounded-xl border border-line bg-surface p-5 shadow-sm md:p-6">
             <div className="mb-5 flex items-center gap-3">
               <span className="flex size-8 items-center justify-center rounded-lg bg-brand-50 text-sm font-bold text-brand-700">
                 3
@@ -344,7 +344,7 @@ function InterviewSetup() {
             </div>
           </section>
 
-          <section className="rounded-xl border border-line bg-white p-5 shadow-sm md:p-6">
+          <section className="rounded-xl border border-line bg-surface p-5 shadow-sm md:p-6">
             <div className="mb-5 flex items-center gap-3">
               <span className="flex size-8 items-center justify-center rounded-lg bg-brand-50 text-sm font-bold text-brand-700">
                 4
@@ -371,8 +371,8 @@ function InterviewSetup() {
                     className={[
                       "inline-flex items-center gap-2 rounded-lg border px-3.5 py-2 text-sm font-medium transition",
                       selected
-                        ? "border-brand-600 bg-brand-50 text-brand-700"
-                        : "border-line bg-white text-slate-600 hover:border-slate-300 hover:bg-slate-50",
+                        ? "theme-selected text-brand-700"
+                        : "border-line bg-surface text-slate-600 hover:border-slate-300 hover:bg-slate-50",
                     ].join(" ")}
                   >
                     {selected && <Check size={15} />}
@@ -389,7 +389,7 @@ function InterviewSetup() {
             )}
           </section>
 
-          <section className="rounded-xl border border-line bg-white p-5 shadow-sm md:p-6">
+          <section className="rounded-xl border border-line bg-surface p-5 shadow-sm md:p-6">
             <div className="mb-5 flex items-center gap-3">
               <span className="flex size-8 items-center justify-center rounded-lg bg-brand-50 text-sm font-bold text-brand-700">
                 5
@@ -416,8 +416,8 @@ function InterviewSetup() {
                     className={[
                       "rounded-xl border px-4 py-4 text-center transition",
                       selected
-                        ? "border-brand-600 bg-brand-50 ring-1 ring-brand-600"
-                        : "border-line bg-white hover:border-slate-300 hover:bg-slate-50",
+                        ? "theme-selected ring-1 ring-brand-500"
+                        : "border-line bg-surface hover:border-slate-300 hover:bg-slate-50",
                     ].join(" ")}
                   >
                     <span className="block text-xl font-bold text-ink">
@@ -433,7 +433,7 @@ function InterviewSetup() {
           </section>
         </div>
 
-        <aside className="rounded-xl border border-line bg-white shadow-sm xl:sticky xl:top-24">
+        <aside className="rounded-xl border border-line bg-surface shadow-sm xl:sticky xl:top-24">
           <div className="border-b border-line p-5">
             <div className="flex items-center gap-3">
               <span className="flex size-10 items-center justify-center rounded-lg bg-brand-600 text-white">

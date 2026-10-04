@@ -9,7 +9,7 @@ function MetricCard({
   trend,
 }) {
   return (
-    <article className="rounded-xl border border-line bg-white p-5 shadow-sm">
+    <article className="rounded-xl border border-line bg-surface p-5 shadow-sm">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-sm font-medium text-muted">{title}</p>

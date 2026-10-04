@@ -9,7 +9,7 @@ function PagePlaceholder({ title, description }) {
         <p className="mt-2 text-sm text-muted md:text-base">{description}</p>
       </div>
 
-      <div className="rounded-xl border border-dashed border-line-strong bg-white p-12 text-center">
+      <div className="rounded-xl border border-dashed border-line-strong bg-surface p-12 text-center">
         <p className="text-sm font-medium text-slate-500">
           The Stitch design will be implemented here.
         </p>

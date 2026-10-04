@@ -31,7 +31,7 @@ function AnalyticsTooltip({ active, payload, label }) {
   }
 
   return (
-    <div className="rounded-lg border border-line bg-white px-3 py-2 shadow-lg">
+    <div className="rounded-lg border border-line bg-surface px-3 py-2 shadow-lg">
       {label && <p className="text-xs font-medium text-muted">{label}</p>}
 
       <p className="mt-1 text-sm font-bold text-brand-700">
@@ -190,7 +190,7 @@ function Analytics() {
         <button
           type="button"
           onClick={downloadAnalytics}
-          className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-line bg-white px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+          className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-line bg-surface px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50"
         >
           <Download size={17} />
           Export CSV
@@ -204,7 +204,7 @@ function Analytics() {
           return (
             <article
               key={metric.label}
-              className="rounded-xl border border-line bg-white p-5 shadow-sm"
+              className="rounded-xl border border-line bg-surface p-5 shadow-sm"
             >
               <div className="flex items-start justify-between gap-4">
                 <div>
@@ -233,7 +233,7 @@ function Analytics() {
       </section>
 
       <section className="grid gap-5 xl:grid-cols-[minmax(0,1.7fr)_minmax(320px,0.8fr)]">
-        <article className="rounded-xl border border-line bg-white p-5 shadow-sm md:p-6">
+        <article className="rounded-xl border border-line bg-surface p-5 shadow-sm md:p-6">
           <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
             <div>
               <h2 className="font-semibold text-ink">
@@ -317,7 +317,7 @@ function Analytics() {
           </div>
         </article>
 
-        <article className="rounded-xl border border-line bg-white p-5 shadow-sm md:p-6">
+        <article className="rounded-xl border border-line bg-surface p-5 shadow-sm md:p-6">
           <div>
             <h2 className="font-semibold text-ink">Format distribution</h2>
             <p className="mt-1 text-sm text-muted">
@@ -370,7 +370,7 @@ function Analytics() {
       </section>
 
       <section className="grid gap-5 xl:grid-cols-2">
-        <article className="rounded-xl border border-line bg-white shadow-sm">
+        <article className="rounded-xl border border-line bg-surface shadow-sm">
           <div className="border-b border-line p-5 md:px-6">
             <div className="flex items-center gap-3">
               <span className="flex size-10 items-center justify-center rounded-lg bg-green-50 text-green-700">
@@ -420,7 +420,7 @@ function Analytics() {
           </div>
         </article>
 
-        <article className="rounded-xl border border-line bg-white shadow-sm">
+        <article className="rounded-xl border border-line bg-surface shadow-sm">
           <div className="border-b border-line p-5 md:px-6">
             <div className="flex items-center gap-3">
               <span className="flex size-10 items-center justify-center rounded-lg bg-amber-50 text-amber-700">
@@ -479,7 +479,7 @@ function Analytics() {
         </article>
       </section>
 
-      <section className="rounded-xl border border-line bg-white p-5 shadow-sm md:p-6">
+      <section className="rounded-xl border border-line bg-surface p-5 shadow-sm md:p-6">
         <div className="flex items-center gap-3">
           <span className="flex size-10 items-center justify-center rounded-lg bg-violet-50 text-violet-700">
             <Activity size={20} />

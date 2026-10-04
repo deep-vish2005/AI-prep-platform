@@ -9,7 +9,7 @@ const features = [
 
 function AuthLayout({ title, description, children }) {
   return (
-    <div className="grid min-h-screen bg-white lg:grid-cols-[1fr_1.1fr]">
+    <div className="grid min-h-screen bg-surface lg:grid-cols-[1fr_1.1fr]">
       <section className="flex min-h-screen flex-col px-6 py-6 sm:px-10 lg:px-16">
         <Link to="/" className="flex items-center gap-2.5 self-start">
           <span className="flex size-10 items-center justify-center rounded-lg bg-brand-600 text-white">

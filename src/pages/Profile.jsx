@@ -69,7 +69,7 @@ function Profile() {
       </section>
 
       <section className="grid items-start gap-6 lg:grid-cols-[280px_minmax(0,1fr)]">
-        <aside className="rounded-xl border border-line bg-white p-6 text-center shadow-sm">
+        <aside className="rounded-xl border border-line bg-surface p-6 text-center shadow-sm">
           <div className="mx-auto flex size-20 items-center justify-center rounded-full bg-brand-100 text-3xl font-bold text-brand-700">
             {initial}
           </div>
@@ -96,7 +96,7 @@ function Profile() {
 
         <form
           onSubmit={handleSubmit}
-          className="rounded-xl border border-line bg-white shadow-sm"
+          className="rounded-xl border border-line bg-surface shadow-sm"
         >
           <div className="border-b border-line p-5 md:px-6">
             <h2 className="font-semibold text-ink">Personal information</h2>
@@ -192,7 +192,7 @@ function Profile() {
                 name="experienceLevel"
                 value={form.experienceLevel}
                 onChange={updateField}
-                className="h-11 w-full rounded-lg border border-line-strong bg-white px-3.5 text-sm outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
+                className="h-11 w-full rounded-lg border border-line-strong bg-surface px-3.5 text-sm outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
               >
                 <option value="Beginner">Beginner</option>
                 <option value="Intermediate">Intermediate</option>

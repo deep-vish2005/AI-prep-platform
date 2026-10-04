@@ -144,7 +144,7 @@ function Settings() {
         </p>
       </section>
 
-      <section className="rounded-xl border border-line bg-white shadow-sm">
+      <section className="rounded-xl border border-line bg-surface shadow-sm">
         <div className="flex items-center gap-3 border-b border-line p-5 md:px-6">
           <span className="flex size-10 items-center justify-center rounded-lg bg-brand-50 text-brand-700">
             <KeyRound size={20} />

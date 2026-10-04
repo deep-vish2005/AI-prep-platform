@@ -15,7 +15,7 @@ function ChartTooltip({ active, payload, label }) {
   }
 
   return (
-    <div className="rounded-lg border border-line bg-white px-3 py-2 shadow-lg">
+    <div className="rounded-lg border border-line bg-surface px-3 py-2 shadow-lg">
       <p className="text-xs font-medium text-muted">{label}</p>
       <p className="mt-1 text-sm font-bold text-brand-700">
         {payload[0].value}/10
@@ -50,7 +50,7 @@ function PerformanceChart({ data = [] }) {
     });
   }, [data, period]);
   return (
-    <section className="rounded-xl border border-line bg-white p-5 shadow-sm lg:p-6">
+    <section className="rounded-xl border border-line bg-surface p-5 shadow-sm lg:p-6">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
           <h2 className="text-lg font-semibold text-ink">
@@ -65,7 +65,7 @@ function PerformanceChart({ data = [] }) {
           aria-label="Chart period"
           value={period}
           onChange={(event) => setPeriod(event.target.value)}
-          className="h-9 rounded-lg border border-line bg-white px-3 text-sm text-slate-600 outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
+          className="h-9 rounded-lg border border-line bg-surface px-3 text-sm text-slate-600 outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
         >
           <option value="6-sessions">Last 6 sessions</option>
           <option value="30-days">Last 30 days</option>
