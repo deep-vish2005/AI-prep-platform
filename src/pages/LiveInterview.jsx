@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import api from "../services/api";
 
 const questions = [
   {
@@ -139,14 +140,30 @@ function LiveInterview() {
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
+  const [evaluation, setEvaluation] = useState(null);
+  const [submitError, setSubmitError] = useState("");
   const [submittedAnswers, setSubmittedAnswers] = useState([]);
 
   const availableQuestions = useMemo(() => {
-    const requestedCount = Number(session.questionCount) || 5;
-    return questions.slice(0, Math.min(requestedCount, questions.length));
-  }, [session.questionCount]);
+    const generatedQuestions =
+      Array.isArray(session.questions) && session.questions.length
+        ? session.questions
+        : questions;
+
+    const requestedCount =
+      Number(session.questionCount) || generatedQuestions.length;
+
+    return generatedQuestions.slice(
+      0,
+      Math.min(requestedCount, generatedQuestions.length),
+    );
+  }, [session]);
 
   const currentQuestion = availableQuestions[currentIndex];
+  const questionText =
+    currentQuestion?.question ||
+    currentQuestion?.prompt ||
+    "Question unavailable";
   const totalQuestions = availableQuestions.length;
   const progress = ((currentIndex + 1) / totalQuestions) * 100;
   const isFinalQuestion = currentIndex === totalQuestions - 1;
@@ -159,36 +176,57 @@ function LiveInterview() {
     return () => window.clearInterval(timer);
   }, []);
 
-  useEffect(() => {
-    if (!isEvaluating) {
-      return undefined;
-    }
-
-    const evaluationTimer = window.setTimeout(() => {
-      setIsEvaluating(false);
-      setShowFeedback(true);
-    }, 1400);
-
-    return () => window.clearTimeout(evaluationTimer);
-  }, [isEvaluating]);
-
-  function submitAnswer() {
-    if (!answer.trim()) {
+  async function submitAnswer() {
+    if (!answer.trim() || isEvaluating) {
       return;
     }
 
-    setSubmittedAnswers((current) => [
-      ...current,
-      {
-        questionId: currentQuestion.id,
-        question: currentQuestion.prompt,
-        answer: answer.trim(),
-        score: currentQuestion.feedback.score,
-        feedback: currentQuestion.feedback,
-      },
-    ]);
+    if (!session.interviewId || !currentQuestion._id) {
+      setSubmitError(
+        "This session does not contain saved Gemini questions. Start a new interview.",
+      );
+      return;
+    }
 
+    setSubmitError("");
     setIsEvaluating(true);
+
+    try {
+      const response = await api.post(
+        `/interviews/${session.interviewId}/questions/${currentQuestion._id}/answer`,
+        {
+          answer: answer.trim(),
+        },
+      );
+
+      const receivedEvaluation = response.data.evaluation;
+
+      setEvaluation(receivedEvaluation);
+
+      setSubmittedAnswers((current) => [
+        ...current,
+        {
+          questionId: currentQuestion._id,
+          question: questionText,
+          answer: answer.trim(),
+          score: receivedEvaluation.score,
+          feedback: {
+            strength: receivedEvaluation.strength,
+            missing: receivedEvaluation.missing,
+            suggestion: receivedEvaluation.suggestion,
+          },
+        },
+      ]);
+
+      setShowFeedback(true);
+    } catch (requestError) {
+      setSubmitError(
+        requestError.response?.data?.message ||
+          "Unable to evaluate this answer. Please try again.",
+      );
+    } finally {
+      setIsEvaluating(false);
+    }
   }
 
   function continueInterview() {
@@ -209,6 +247,8 @@ function LiveInterview() {
     setCurrentIndex((current) => current + 1);
     setAnswer("");
     setShowFeedback(false);
+    setEvaluation(null);
+    setSubmitError("");
   }
 
   function skipQuestion() {
@@ -220,6 +260,8 @@ function LiveInterview() {
     setCurrentIndex((current) => current + 1);
     setAnswer("");
     setShowFeedback(false);
+    setEvaluation(null);
+    setSubmitError("");
   }
 
   function exitInterview() {
@@ -332,7 +374,7 @@ function LiveInterview() {
                 </p>
 
                 <h1 className="mt-3 text-xl font-semibold leading-8 text-ink md:text-2xl md:leading-9">
-                  {currentQuestion.prompt}
+                  {questionText}
                 </h1>
               </div>
             </section>
@@ -369,6 +411,12 @@ function LiveInterview() {
                 <span>{answer.length} characters</span>
               </div>
 
+              {submitError && (
+                <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  {submitError}
+                </div>
+              )}
+
               {!showFeedback && (
                 <div className="mt-6 flex flex-col-reverse justify-between gap-3 sm:flex-row">
                   <button
@@ -402,7 +450,7 @@ function LiveInterview() {
               )}
             </section>
 
-            {showFeedback && (
+            {showFeedback && evaluation && (
               <section className="rounded-xl border border-brand-100 bg-white shadow-sm">
                 <div className="flex flex-col justify-between gap-4 border-b border-line p-5 sm:flex-row sm:items-center md:px-7">
                   <div>
@@ -416,7 +464,7 @@ function LiveInterview() {
 
                   <div className="flex items-baseline gap-1 rounded-lg bg-brand-50 px-4 py-2">
                     <span className="text-2xl font-bold text-brand-700">
-                      {currentQuestion.feedback.score}
+                      {evaluation.score}
                     </span>
                     <span className="text-sm font-semibold text-brand-700">
                       /10
@@ -431,7 +479,7 @@ function LiveInterview() {
                       Strong
                     </div>
                     <p className="mt-2 text-sm leading-6 text-green-900">
-                      {currentQuestion.feedback.strength}
+                      {evaluation.strength}
                     </p>
                   </div>
 
@@ -441,7 +489,7 @@ function LiveInterview() {
                       Missing
                     </div>
                     <p className="mt-2 text-sm leading-6 text-amber-900">
-                      {currentQuestion.feedback.missing}
+                      {evaluation.missing}
                     </p>
                   </div>
 
@@ -451,7 +499,7 @@ function LiveInterview() {
                       Improve
                     </div>
                     <p className="mt-2 text-sm leading-6 text-blue-900">
-                      {currentQuestion.feedback.suggestion}
+                      {evaluation.suggestion}
                     </p>
                   </div>
                 </div>

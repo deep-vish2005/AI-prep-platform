@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import express from "express";
 import connectDatabase from "./config/database.js";
 import authRoutes from "./routes/authRoutes.js";
+import interviewRoutes from "./routes/interviewRoutes.js";
 
 dotenv.config();
 
@@ -28,6 +29,7 @@ app.get("/api/health", (request, response) => {
 });
 
 app.use("/api/auth", authRoutes);
+app.use("/api/interviews", interviewRoutes);
 
 app.use((request, response) => {
   response.status(404).json({

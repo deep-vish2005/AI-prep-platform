@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import api from "../services/api";
 
 const roles = [
   {
@@ -151,6 +152,8 @@ function InterviewSetup() {
   const [format, setFormat] = useState("technical");
   const [topics, setTopics] = useState(["javascript", "react"]);
   const [questionCount, setQuestionCount] = useState(10);
+  const [isStarting, setIsStarting] = useState(false);
+  const [startError, setStartError] = useState("");
 
   const role = roles.find((item) => item.id === selectedRole);
   const level = experienceLevels.find((item) => item.id === experience);
@@ -173,18 +176,45 @@ function InterviewSetup() {
     );
   }
 
-  function startInterview() {
-    const session = {
-      role: role.name,
-      experience: level.name,
-      format: interviewFormat.name,
-      topics: selectedTopicNames,
-      questionCount,
-      estimatedDuration,
-    };
+  async function startInterview() {
+    if (topics.length === 0 || isStarting) {
+      return;
+    }
 
-    sessionStorage.setItem("devprep-session", JSON.stringify(session));
-    navigate("/interview/live");
+    setStartError("");
+    setIsStarting(true);
+
+    try {
+      const response = await api.post("/interviews", {
+        targetRole: role.name,
+        experienceLevel: level.name,
+        interviewType: interviewFormat.name,
+        topics: selectedTopicNames,
+        questionCount,
+      });
+
+      const session = {
+        interviewId: response.data.interview._id,
+        role: response.data.interview.targetRole,
+        experience: response.data.interview.experienceLevel,
+        format: response.data.interview.interviewType,
+        topics: response.data.interview.topics,
+        questionCount: response.data.interview.questionCount,
+        estimatedDuration,
+        questions: response.data.interview.questions,
+      };
+
+      sessionStorage.setItem("devprep-session", JSON.stringify(session));
+
+      navigate("/interview/live");
+    } catch (requestError) {
+      setStartError(
+        requestError.response?.data?.message ||
+          "Unable to start the interview. Please try again.",
+      );
+    } finally {
+      setIsStarting(false);
+    }
   }
 
   return (
@@ -426,6 +456,11 @@ function InterviewSetup() {
           </div>
 
           <div className="border-t border-line p-5">
+            {startError && (
+              <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-sm text-red-700">
+                {startError}
+              </div>
+            )}
             <div className="mb-4">
               <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
                 Focus topics
@@ -460,12 +495,13 @@ function InterviewSetup() {
 
             <button
               type="button"
-              disabled={topics.length === 0}
+              disabled={topics.length === 0 || isStarting}
               onClick={startInterview}
               className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-brand-600 px-5 text-sm font-semibold text-white transition hover:bg-brand-700 focus:outline-none focus:ring-4 focus:ring-brand-100 disabled:cursor-not-allowed disabled:bg-slate-300"
             >
-              Start Interview
-              <ArrowRight size={18} />
+              {isStarting ? "Creating Session..." : "Start Interview"}
+
+              {!isStarting && <ArrowRight size={18} />}
             </button>
 
             <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-muted">
