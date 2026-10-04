@@ -143,6 +143,7 @@ function LiveInterview() {
   const [evaluation, setEvaluation] = useState(null);
   const [submitError, setSubmitError] = useState("");
   const [submittedAnswers, setSubmittedAnswers] = useState([]);
+  const [isSkipping, setIsSkipping] = useState(false);
 
   const availableQuestions = useMemo(() => {
     const generatedQuestions =
@@ -208,6 +209,7 @@ function LiveInterview() {
         {
           questionId: currentQuestion._id,
           question: questionText,
+          topic: currentQuestion.topic,
           answer: answer.trim(),
           score: receivedEvaluation.score,
           feedback: {
@@ -240,7 +242,7 @@ function LiveInterview() {
         }),
       );
 
-      navigate("/interview/report");
+      navigate(`/interview/report/${session.interviewId}`);
       return;
     }
 
@@ -251,17 +253,40 @@ function LiveInterview() {
     setSubmitError("");
   }
 
-  function skipQuestion() {
-    if (isFinalQuestion) {
-      navigate("/interview/report");
+  async function skipQuestion() {
+    if (isEvaluating || isSkipping) {
       return;
     }
 
-    setCurrentIndex((current) => current + 1);
-    setAnswer("");
-    setShowFeedback(false);
-    setEvaluation(null);
+    if (!session.interviewId || !currentQuestion._id) {
+      setSubmitError("Unable to skip this saved question.");
+      return;
+    }
+
     setSubmitError("");
+    setIsSkipping(true);
+
+    try {
+      await api.post(
+        `/interviews/${session.interviewId}/questions/${currentQuestion._id}/skip`,
+      );
+
+      if (isFinalQuestion) {
+        navigate(`/interview/report/${session.interviewId}`);
+        return;
+      }
+
+      setCurrentIndex((current) => current + 1);
+      setAnswer("");
+      setShowFeedback(false);
+      setEvaluation(null);
+    } catch (requestError) {
+      setSubmitError(
+        requestError.response?.data?.message || "Unable to skip this question.",
+      );
+    } finally {
+      setIsSkipping(false);
+    }
   }
 
   function exitInterview() {
@@ -421,11 +446,11 @@ function LiveInterview() {
                 <div className="mt-6 flex flex-col-reverse justify-between gap-3 sm:flex-row">
                   <button
                     type="button"
-                    disabled={isEvaluating}
+                    disabled={isEvaluating || isSkipping}
                     onClick={skipQuestion}
-                    className="h-11 rounded-lg border border-line px-5 text-sm font-semibold text-slate-600 hover:bg-slate-50 disabled:opacity-50"
+                    className="h-11 rounded-lg border border-line px-5 text-sm font-semibold text-slate-600 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    Skip Question
+                    {isSkipping ? "Skipping..." : "Skip Question"}
                   </button>
 
                   <button

@@ -48,6 +48,13 @@ export function AuthProvider({ children }) {
     return response.data;
   }
 
+  async function updateProfile(profileData) {
+    const response = await api.patch("/auth/profile", profileData);
+
+    setUser(response.data.user);
+    return response.data;
+  }
+
   function logout() {
     localStorage.removeItem("devprep-token");
     setUser(null);
@@ -60,6 +67,7 @@ export function AuthProvider({ children }) {
       isAuthenticated: Boolean(user),
       register,
       login,
+      updateProfile,
       logout,
     }),
     [user, isLoading],

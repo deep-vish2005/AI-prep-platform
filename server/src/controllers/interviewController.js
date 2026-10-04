@@ -8,6 +8,39 @@ const allowedQuestionCounts = [5, 10, 15, 20];
 const allowedExperienceLevels = ["Beginner", "Intermediate", "Advanced"];
 const allowedInterviewTypes = ["Technical", "Behavioral", "Mixed"];
 
+function finalizeInterviewIfComplete(interview) {
+  const processedQuestions = interview.questions.filter(
+    (question) =>
+      question.skipped || (question.answer && question.score !== null),
+  );
+
+  if (processedQuestions.length !== interview.questions.length) {
+    return;
+  }
+
+  const totalScore = interview.questions.reduce(
+    (total, question) => total + Number(question.score || 0),
+    0,
+  );
+
+  interview.overallScore = totalScore / interview.questions.length;
+
+  interview.strengths = interview.questions
+    .filter((question) => !question.skipped)
+    .map((question) => question.feedback.strength)
+    .filter(Boolean)
+    .slice(0, 5);
+
+  interview.weaknesses = interview.questions
+    .filter((question) => !question.skipped)
+    .map((question) => question.feedback.missing)
+    .filter(Boolean)
+    .slice(0, 5);
+
+  interview.status = "completed";
+  interview.completedAt = new Date();
+}
+
 export async function createInterview(request, response, next) {
   try {
     const {
@@ -187,31 +220,7 @@ export async function submitInterviewAnswer(request, response, next) {
       suggestion: evaluation.suggestion,
     };
 
-    const answeredQuestions = interview.questions.filter(
-      (item) => item.answer && item.score !== null,
-    );
-
-    if (answeredQuestions.length === interview.questions.length) {
-      const totalScore = answeredQuestions.reduce(
-        (total, item) => total + item.score,
-        0,
-      );
-
-      interview.overallScore = totalScore / answeredQuestions.length;
-
-      interview.strengths = answeredQuestions
-        .map((item) => item.feedback.strength)
-        .filter(Boolean)
-        .slice(0, 5);
-
-      interview.weaknesses = answeredQuestions
-        .map((item) => item.feedback.missing)
-        .filter(Boolean)
-        .slice(0, 5);
-
-      interview.status = "completed";
-      interview.completedAt = new Date();
-    }
+    finalizeInterviewIfComplete(interview);
 
     await interview.save();
 
@@ -219,6 +228,73 @@ export async function submitInterviewAnswer(request, response, next) {
       success: true,
       message: "Answer evaluated successfully",
       evaluation,
+      interviewStatus: interview.status,
+      overallScore: interview.overallScore,
+    });
+  } catch (error) {
+    if (error.name === "CastError") {
+      return response.status(404).json({
+        success: false,
+        message: "Interview or question not found",
+      });
+    }
+
+    return next(error);
+  }
+}
+
+export async function skipInterviewQuestion(
+  request,
+  response,
+  next,
+) {
+  try {
+    const interview = await Interview.findOne({
+      _id: request.params.interviewId,
+      user: request.user._id,
+    });
+
+    if (!interview) {
+      return response.status(404).json({
+        success: false,
+        message: "Interview not found",
+      });
+    }
+
+    if (interview.status !== "in_progress") {
+      return response.status(400).json({
+        success: false,
+        message: "This interview is no longer in progress",
+      });
+    }
+
+    const question = interview.questions.id(
+      request.params.questionId,
+    );
+
+    if (!question) {
+      return response.status(404).json({
+        success: false,
+        message: "Interview question not found",
+      });
+    }
+
+    question.skipped = true;
+    question.answer = "";
+    question.score = 0;
+    question.feedback = {
+      strength: "",
+      missing: "The question was skipped.",
+      suggestion:
+        "Review this topic and attempt a similar question later.",
+    };
+
+    finalizeInterviewIfComplete(interview);
+    await interview.save();
+
+    return response.status(200).json({
+      success: true,
+      message: "Question skipped",
       interviewStatus: interview.status,
       overallScore: interview.overallScore,
     });

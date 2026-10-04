@@ -25,6 +25,10 @@ function App() {
           <Route index element={<Dashboard />} />
           <Route path="interview/new" element={<InterviewSetup />} />
           <Route path="interview/report" element={<InterviewReport />} />
+          <Route
+            path="interview/report/:interviewId"
+            element={<InterviewReport />}
+          />
           <Route path="history" element={<History />} />
           <Route path="analytics" element={<Analytics />} />
           <Route path="profile" element={<Profile />} />

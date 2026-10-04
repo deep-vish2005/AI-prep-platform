@@ -25,6 +25,11 @@ const questionSchema = new mongoose.Schema(
       default: "",
     },
 
+    skipped: {
+  type: Boolean,
+  default: false,
+},
+
     score: {
       type: Number,
       min: 0,

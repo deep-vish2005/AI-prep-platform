@@ -115,3 +115,111 @@ export async function getCurrentUser(request, response) {
     user: formatUser(request.user),
   });
 }
+
+export async function updateProfile(request, response, next) {
+  try {
+    const { name, targetRole, experienceLevel } = request.body;
+
+    const user = await User.findById(request.user._id);
+
+    if (!user) {
+      return response.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    if (name !== undefined) {
+      if (!name.trim()) {
+        return response.status(400).json({
+          success: false,
+          message: "Name cannot be empty",
+        });
+      }
+
+      user.name = name.trim();
+    }
+
+    if (targetRole !== undefined) {
+      user.targetRole = targetRole.trim() || "Software Engineer";
+    }
+
+    if (experienceLevel !== undefined) {
+      const allowedLevels = ["Beginner", "Intermediate", "Advanced"];
+
+      if (!allowedLevels.includes(experienceLevel)) {
+        return response.status(400).json({
+          success: false,
+          message: "Invalid experience level",
+        });
+      }
+
+      user.experienceLevel = experienceLevel;
+    }
+
+    await user.save();
+
+    return response.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      user: formatUser(user),
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+export async function changePassword(request, response, next) {
+  try {
+    const { currentPassword, newPassword } = request.body;
+
+    if (!currentPassword || !newPassword) {
+      return response.status(400).json({
+        success: false,
+        message: "Current and new passwords are required",
+      });
+    }
+
+    if (newPassword.length < 8) {
+      return response.status(400).json({
+        success: false,
+        message: "New password must contain at least 8 characters",
+      });
+    }
+
+    if (currentPassword === newPassword) {
+      return response.status(400).json({
+        success: false,
+        message: "New password must be different from the current password",
+      });
+    }
+
+    const user = await User.findById(request.user._id).select("+password");
+
+    if (!user) {
+      return response.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    const passwordIsCorrect = await user.comparePassword(currentPassword);
+
+    if (!passwordIsCorrect) {
+      return response.status(401).json({
+        success: false,
+        message: "Current password is incorrect",
+      });
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    return response.status(200).json({
+      success: true,
+      message: "Password changed successfully",
+    });
+  } catch (error) {
+    return next(error);
+  }
+}

@@ -10,9 +10,10 @@ import {
   Sparkles,
   Target,
 } from "lucide-react";
-import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
-import { competencyScores, fallbackReport } from "../data/reportData";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useParams } from "react-router-dom";
+import api from "../services/api";
+import { fallbackReport } from "../data/reportData";
 
 function readResults() {
   try {
@@ -56,7 +57,63 @@ function scoreStatus(score) {
 }
 
 function InterviewReport() {
-  const [results] = useState(readResults);
+  const { interviewId } = useParams();
+
+  const [results, setResults] = useState(readResults);
+  const [isLoadingReport, setIsLoadingReport] = useState(Boolean(interviewId));
+  const [reportError, setReportError] = useState("");
+
+  useEffect(() => {
+    if (!interviewId) {
+      setIsLoadingReport(false);
+      return;
+    }
+
+    async function loadInterviewReport() {
+      try {
+        const response = await api.get(`/interviews/${interviewId}`);
+
+        const interview = response.data.interview;
+
+        const formattedResults = {
+          session: {
+            role: interview.targetRole,
+            experience: interview.experienceLevel,
+            format: interview.interviewType,
+            topics: interview.topics,
+          },
+
+          completedAt: interview.completedAt || interview.createdAt,
+
+          answers: interview.questions
+            .filter((question) => question.answer && question.score !== null)
+            .map((question) => ({
+              questionId: question._id,
+              question: question.question,
+              topic: question.topic,
+              answer: question.answer,
+              score: question.score,
+              feedback: {
+                strength: question.feedback?.strength || "",
+                missing: question.feedback?.missing || "",
+                suggestion: question.feedback?.suggestion || "",
+              },
+            })),
+        };
+
+        setResults(formattedResults);
+      } catch (requestError) {
+        setReportError(
+          requestError.response?.data?.message ||
+            "Unable to load this interview report.",
+        );
+      } finally {
+        setIsLoadingReport(false);
+      }
+    }
+
+    loadInterviewReport();
+  }, [interviewId]);
 
   const overallScore = useMemo(() => {
     const total = results.answers.reduce(
@@ -65,6 +122,38 @@ function InterviewReport() {
     );
 
     return total / results.answers.length;
+  }, [results.answers]);
+
+  const competencyScores = useMemo(() => {
+    const topics = new Map();
+
+    results.answers.forEach((answer) => {
+      const topic = answer.topic || "General";
+
+      const existing = topics.get(topic) || {
+        total: 0,
+        count: 0,
+      };
+
+      existing.total += Number(answer.score || 0);
+      existing.count += 1;
+
+      topics.set(topic, existing);
+    });
+
+    const colors = [
+      "bg-blue-600",
+      "bg-violet-600",
+      "bg-emerald-600",
+      "bg-amber-500",
+      "bg-cyan-600",
+    ];
+
+    return Array.from(topics.entries()).map(([name, data], index) => ({
+      name,
+      score: Math.round((data.total / data.count) * 10),
+      color: colors[index % colors.length],
+    }));
   }, [results.answers]);
 
   const overallPercentage = Math.round(overallScore * 10);
@@ -99,9 +188,27 @@ function InterviewReport() {
 
     URL.revokeObjectURL(downloadUrl);
   }
+  if (isLoadingReport) {
+    return (
+      <div className="flex min-h-80 items-center justify-center">
+        <div className="text-center">
+          <div className="mx-auto size-9 animate-spin rounded-full border-4 border-brand-100 border-t-brand-600" />
+
+          <p className="mt-4 text-sm font-medium text-muted">
+            Loading interview report...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
+      {reportError && (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {reportError}
+        </div>
+      )}
       <section className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
         <div>
           <Link
@@ -204,11 +311,9 @@ function InterviewReport() {
             </span>
 
             <div>
-              <h2 className="font-semibold text-ink">
-                Core competency performance
-              </h2>
+              <h2 className="font-semibold text-ink">Topic performance</h2>
               <p className="text-sm text-muted">
-                Evaluation across key interview dimensions
+                Scores calculated from evaluated answers
               </p>
             </div>
           </div>

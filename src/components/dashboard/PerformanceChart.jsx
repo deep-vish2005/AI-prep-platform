@@ -7,7 +7,6 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { scoreProgression } from "../../data/dashboardData";
 
 function ChartTooltip({ active, payload, label }) {
   if (!active || !payload?.length) {
@@ -24,7 +23,7 @@ function ChartTooltip({ active, payload, label }) {
   );
 }
 
-function PerformanceChart() {
+function PerformanceChart({ data = [] }) {
   return (
     <section className="rounded-xl border border-line bg-white p-5 shadow-sm lg:p-6">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
@@ -51,7 +50,7 @@ function PerformanceChart() {
       <div className="mt-6 h-72 w-full">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
-            data={scoreProgression}
+            data={data}
             margin={{ top: 10, right: 15, left: -20, bottom: 0 }}
           >
             <CartesianGrid
@@ -61,7 +60,7 @@ function PerformanceChart() {
             />
 
             <XAxis
-              dataKey="session"
+              dataKey="label"
               axisLine={false}
               tickLine={false}
               tick={{ fill: "#64748b", fontSize: 12 }}

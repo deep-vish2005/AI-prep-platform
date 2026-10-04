@@ -11,42 +11,8 @@ import {
 import { Link } from "react-router-dom";
 import MetricCard from "../components/dashboard/MetricCard";
 import PerformanceChart from "../components/dashboard/PerformanceChart";
-import { recentInterviews, recommendedPractice } from "../data/dashboardData";
+import useAnalytics from "../hooks/useAnalytics";
 import { useAuth } from "../context/AuthContext";
-
-const metrics = [
-  {
-    title: "Total Interviews",
-    value: "24",
-    detail: "4 completed this week",
-    icon: ClipboardList,
-    iconClassName: "bg-blue-50 text-blue-700",
-    trend: "12%",
-  },
-  {
-    title: "Average Score",
-    value: "8.4",
-    detail: "Across all interviews",
-    icon: Target,
-    iconClassName: "bg-violet-50 text-violet-700",
-    trend: "0.6",
-  },
-  {
-    title: "Best Score",
-    value: "9.6",
-    detail: "Frontend Engineer",
-    icon: Award,
-    iconClassName: "bg-amber-50 text-amber-700",
-  },
-  {
-    title: "Improvement",
-    value: "+18%",
-    detail: "Compared with last month",
-    icon: TrendingUp,
-    iconClassName: "bg-green-50 text-green-700",
-    trend: "5%",
-  },
-];
 
 function scoreStyle(score) {
   if (score >= 8.5) {
@@ -62,8 +28,69 @@ function scoreStyle(score) {
 
 function Dashboard() {
   const { user } = useAuth();
+  const { analytics, isLoading, error } = useAnalytics();
+
+  const summary = analytics?.summary || {
+    totalInterviews: 0,
+    completedInterviews: 0,
+    averageScore: 0,
+    bestScore: 0,
+    completionRate: 0,
+  };
+
+  const metrics = [
+    {
+      title: "Total Interviews",
+      value: isLoading ? "—" : summary.totalInterviews,
+      detail: `${summary.completedInterviews} completed`,
+      icon: ClipboardList,
+      iconClassName: "bg-blue-50 text-blue-700",
+    },
+    {
+      title: "Average Score",
+      value: isLoading ? "—" : `${Number(summary.averageScore).toFixed(1)}`,
+      detail: "Across completed interviews",
+      icon: Target,
+      iconClassName: "bg-violet-50 text-violet-700",
+    },
+    {
+      title: "Best Score",
+      value: isLoading ? "—" : `${Number(summary.bestScore).toFixed(1)}`,
+      detail: "Your highest result",
+      icon: Award,
+      iconClassName: "bg-amber-50 text-amber-700",
+    },
+    {
+      title: "Completion Rate",
+      value: isLoading ? "—" : `${Number(summary.completionRate).toFixed(0)}%`,
+      detail: "Completed practice sessions",
+      icon: TrendingUp,
+      iconClassName: "bg-green-50 text-green-700",
+    },
+  ];
+
+  const recentInterviews = analytics?.recentInterviews || [];
+
+  const recommendedPractice = (analytics?.focusAreas || []).map(
+    (topic, index) => ({
+      id: topic.name,
+      title: topic.name,
+      category: "Recommended focus",
+      level: topic.priority,
+      progress: topic.percentage,
+      description:
+        topic.priority === "High"
+          ? "This is currently one of your weakest evaluated topics."
+          : "Additional practice can strengthen your confidence in this topic.",
+    }),
+  );
   return (
     <div className="space-y-8">
+      {error && (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </div>
+      )}
       <section className="flex flex-col justify-between gap-5 md:flex-row md:items-center">
         <div>
           <p className="text-sm font-medium text-brand-700">
@@ -94,7 +121,7 @@ function Dashboard() {
         ))}
       </section>
 
-      <PerformanceChart />
+      <PerformanceChart data={analytics?.scoreProgression || []} />
 
       <section className="rounded-xl border border-line bg-white shadow-sm">
         <div className="flex items-center justify-between border-b border-line px-5 py-4 lg:px-6">
@@ -158,14 +185,18 @@ function Dashboard() {
 
                   <td className="px-6 py-4">
                     <span className="rounded-md bg-slate-100 px-2.5 py-1 text-xs font-medium text-slate-700">
-                      {interview.type}
+                      {interview.format}
                     </span>
                   </td>
 
                   <td className="px-6 py-4">
                     <span className="flex items-center gap-2 text-sm text-slate-600">
                       <CalendarDays size={15} />
-                      {interview.date}
+                      {new Intl.DateTimeFormat("en-IN", {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                      }).format(new Date(interview.createdAt))}
                     </span>
                   </td>
 
@@ -175,24 +206,34 @@ function Dashboard() {
                         interview.score,
                       )}`}
                     >
-                      {interview.score}/10
+                      {interview.score !== null
+                        ? `${Number(interview.score).toFixed(1)}/10`
+                        : "—"}
                     </span>
                   </td>
 
                   <td className="px-6 py-4">
                     <span className="inline-flex items-center gap-1.5 text-sm font-medium text-green-700">
                       <CheckCircle2 size={15} />
-                      {interview.status}
+                      {interview.status === "completed"
+                        ? "Completed"
+                        : "In progress"}
                     </span>
                   </td>
 
                   <td className="px-6 py-4 text-right">
-                    <Link
-                      to="/interview/report"
-                      className="text-sm font-semibold text-brand-700 hover:text-brand-800"
-                    >
-                      View report
-                    </Link>
+                    {interview.status === "completed" ? (
+                      <Link
+                        to={`/interview/report/${interview.id}`}
+                        className="text-sm font-semibold text-brand-700 hover:text-brand-800"
+                      >
+                        View report
+                      </Link>
+                    ) : (
+                      <span className="text-sm text-slate-400">
+                        Unavailable
+                      </span>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -212,6 +253,13 @@ function Dashboard() {
         </div>
 
         <div className="grid gap-4 lg:grid-cols-3">
+          {!isLoading && recommendedPractice.length === 0 && (
+            <div className="rounded-xl border border-dashed border-line-strong bg-white p-8 text-center lg:col-span-3">
+              <p className="text-sm font-medium text-muted">
+                Complete an interview to receive topic recommendations.
+              </p>
+            </div>
+          )}
           {recommendedPractice.map((item) => (
             <article
               key={item.id}

@@ -23,44 +23,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import {
-  analyticsScoreData,
-  focusAreas,
-  interviewFormats,
-  monthlyActivity,
-  strongestTopics,
-} from "../data/analyticsData";
-
-const metrics = [
-  {
-    label: "Total interviews",
-    value: "24",
-    detail: "5 this month",
-    icon: CalendarDays,
-    iconStyle: "bg-blue-50 text-blue-700",
-  },
-  {
-    label: "Average score",
-    value: "8.4",
-    detail: "+0.6 this month",
-    icon: Target,
-    iconStyle: "bg-violet-50 text-violet-700",
-  },
-  {
-    label: "Completion rate",
-    value: "98.2%",
-    detail: "Above your target",
-    icon: Award,
-    iconStyle: "bg-green-50 text-green-700",
-  },
-  {
-    label: "Current streak",
-    value: "14 days",
-    detail: "Personal best",
-    icon: Flame,
-    iconStyle: "bg-amber-50 text-amber-700",
-  },
-];
+import useAnalytics from "../hooks/useAnalytics";
 
 function AnalyticsTooltip({ active, payload, label }) {
   if (!active || !payload?.length) {
@@ -80,6 +43,66 @@ function AnalyticsTooltip({ active, payload, label }) {
 }
 
 function Analytics() {
+  const { analytics, isLoading, error } = useAnalytics();
+
+  const summary = analytics?.summary || {
+    totalInterviews: 0,
+    completedInterviews: 0,
+    averageScore: 0,
+    bestScore: 0,
+    completionRate: 0,
+  };
+
+  const analyticsScoreData = analytics?.scoreProgression || [];
+  const interviewFormats = analytics?.formatDistribution || [];
+  const monthlyActivity = analytics?.monthlyActivity || [];
+
+  const strongestTopics = (analytics?.strongestTopics || []).map((topic) => ({
+    name: topic.name,
+    score: topic.percentage,
+    interviews: topic.questionsEvaluated,
+  }));
+
+  const focusAreas = (analytics?.focusAreas || []).map((topic) => ({
+    name: topic.name,
+    score: topic.percentage,
+    priority: topic.priority,
+    recommendation:
+      topic.priority === "High"
+        ? "Prioritize this topic in your next practice session."
+        : "Continue practising this topic to improve consistency.",
+  }));
+
+  const metrics = [
+    {
+      label: "Total interviews",
+      value: isLoading ? "—" : summary.totalInterviews,
+      detail: `${summary.completedInterviews} completed`,
+      icon: CalendarDays,
+      iconStyle: "bg-blue-50 text-blue-700",
+    },
+    {
+      label: "Average score",
+      value: isLoading ? "—" : Number(summary.averageScore).toFixed(1),
+      detail: "Across completed sessions",
+      icon: Target,
+      iconStyle: "bg-violet-50 text-violet-700",
+    },
+    {
+      label: "Completion rate",
+      value: isLoading ? "—" : `${Number(summary.completionRate).toFixed(0)}%`,
+      detail: "Of all started sessions",
+      icon: Award,
+      iconStyle: "bg-green-50 text-green-700",
+    },
+    {
+      label: "Best score",
+      value: isLoading ? "—" : Number(summary.bestScore).toFixed(1),
+      detail: "Highest completed result",
+      icon: Flame,
+      iconStyle: "bg-amber-50 text-amber-700",
+    },
+  ];
   function downloadAnalytics() {
     const data = {
       generatedAt: new Date().toISOString(),
@@ -106,6 +129,11 @@ function Analytics() {
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
+      {error && (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {error}
+        </div>
+      )}
       <section className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
         <div>
           <p className="text-sm font-semibold text-brand-700">
@@ -178,9 +206,9 @@ function Analytics() {
               </p>
             </div>
 
-            <span className="inline-flex items-center gap-1.5 self-start rounded-md bg-green-50 px-2.5 py-1.5 text-xs font-semibold text-green-700">
+            <span className="inline-flex items-center gap-1.5 self-start rounded-md bg-blue-50 px-2.5 py-1.5 text-xs font-semibold text-blue-700">
               <ArrowUpRight size={14} />
-              18% improvement
+              {analyticsScoreData.length} completed sessions
             </span>
           </div>
 
@@ -321,6 +349,11 @@ function Analytics() {
           </div>
 
           <div className="divide-y divide-line">
+            {!isLoading && strongestTopics.length === 0 && (
+              <div className="p-8 text-center text-sm text-muted">
+                Complete evaluated interviews to see topic strengths.
+              </div>
+            )}
             {strongestTopics.map((topic) => (
               <div key={topic.name} className="p-5 md:px-6">
                 <div className="flex items-center justify-between gap-4">
@@ -366,6 +399,11 @@ function Analytics() {
           </div>
 
           <div className="divide-y divide-line">
+            {!isLoading && strongestTopics.length === 0 && (
+              <div className="p-8 text-center text-sm text-muted">
+                Complete evaluated interviews to see topic strengths.
+              </div>
+            )}
             {focusAreas.map((topic) => (
               <div key={topic.name} className="p-5 md:px-6">
                 <div className="flex items-start justify-between gap-4">

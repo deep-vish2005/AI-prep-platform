@@ -1,77 +1,21 @@
 import {
   CalendarDays,
-  ChevronDown,
   Eye,
   History as HistoryIcon,
+  Loader2,
   Play,
   Search,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-
-const interviews = [
-  {
-    id: 1042,
-    role: "Senior Frontend Engineer",
-    format: "Technical",
-    date: "Oct 2, 2026",
-    questions: 5,
-    score: 8.4,
-    status: "Completed",
-  },
-  {
-    id: 1041,
-    role: "Full Stack Engineer",
-    format: "Mixed",
-    date: "Sep 28, 2026",
-    questions: 10,
-    score: 7.9,
-    status: "Completed",
-  },
-  {
-    id: 1040,
-    role: "Backend Engineer",
-    format: "Technical",
-    date: "Sep 24, 2026",
-    questions: 10,
-    score: 8.7,
-    status: "Completed",
-  },
-  {
-    id: 1039,
-    role: "Software Engineer",
-    format: "Behavioral",
-    date: "Sep 20, 2026",
-    questions: 5,
-    score: 7.6,
-    status: "Completed",
-  },
-  {
-    id: 1038,
-    role: "Frontend Engineer",
-    format: "Technical",
-    date: "Sep 16, 2026",
-    questions: 10,
-    score: 8.1,
-    status: "Completed",
-  },
-  {
-    id: 1037,
-    role: "Full Stack Engineer",
-    format: "Mixed",
-    date: "Sep 12, 2026",
-    questions: 15,
-    score: 6.9,
-    status: "Completed",
-  },
-];
+import api from "../services/api";
 
 function scoreStyle(score) {
   if (score >= 8.5) {
     return "bg-green-50 text-green-700";
   }
 
-  if (score >= 7.5) {
+  if (score >= 7) {
     return "bg-blue-50 text-blue-700";
   }
 
@@ -90,21 +34,71 @@ function formatStyle(format) {
   return "bg-violet-50 text-violet-700";
 }
 
+function formatDate(date) {
+  return new Intl.DateTimeFormat("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).format(new Date(date));
+}
+
 function History() {
+  const [interviews, setInterviews] = useState([]);
   const [query, setQuery] = useState("");
   const [format, setFormat] = useState("All");
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+
+  useEffect(() => {
+    async function loadInterviews() {
+      try {
+        const response = await api.get("/interviews");
+        setInterviews(response.data.interviews);
+      } catch (requestError) {
+        setLoadError(
+          requestError.response?.data?.message ||
+            "Unable to load interview history.",
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    loadInterviews();
+  }, []);
+
+  const completedInterviews = useMemo(
+    () => interviews.filter((interview) => interview.status === "completed"),
+    [interviews],
+  );
 
   const filteredInterviews = useMemo(() => {
     return interviews.filter((interview) => {
-      const matchesSearch = interview.role
+      const matchesSearch = interview.targetRole
         .toLowerCase()
         .includes(query.toLowerCase());
 
-      const matchesFormat = format === "All" || interview.format === format;
+      const matchesFormat =
+        format === "All" || interview.interviewType === format;
 
       return matchesSearch && matchesFormat;
     });
-  }, [query, format]);
+  }, [interviews, query, format]);
+
+  const averageScore = completedInterviews.length
+    ? completedInterviews.reduce(
+        (total, interview) => total + Number(interview.overallScore || 0),
+        0,
+      ) / completedInterviews.length
+    : 0;
+
+  const bestScore = completedInterviews.length
+    ? Math.max(
+        ...completedInterviews.map((interview) =>
+          Number(interview.overallScore || 0),
+        ),
+      )
+    : 0;
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
@@ -119,7 +113,7 @@ function History() {
           </h1>
 
           <p className="mt-2 text-muted">
-            Review previous sessions, scores, and detailed reports.
+            Review previous sessions, scores, and reports.
           </p>
         </div>
 
@@ -132,6 +126,12 @@ function History() {
         </Link>
       </section>
 
+      {loadError && (
+        <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {loadError}
+        </div>
+      )}
+
       <section className="grid gap-4 sm:grid-cols-3">
         <article className="rounded-xl border border-line bg-white p-5 shadow-sm">
           <p className="text-sm font-medium text-muted">Total sessions</p>
@@ -143,19 +143,14 @@ function History() {
         <article className="rounded-xl border border-line bg-white p-5 shadow-sm">
           <p className="text-sm font-medium text-muted">Average score</p>
           <p className="mt-2 text-3xl font-bold text-ink">
-            {(
-              interviews.reduce(
-                (total, interview) => total + interview.score,
-                0,
-              ) / interviews.length
-            ).toFixed(1)}
+            {averageScore.toFixed(1)}
           </p>
         </article>
 
         <article className="rounded-xl border border-line bg-white p-5 shadow-sm">
           <p className="text-sm font-medium text-muted">Best score</p>
           <p className="mt-2 text-3xl font-bold text-ink">
-            {Math.max(...interviews.map((interview) => interview.score))}
+            {bestScore.toFixed(1)}
           </p>
         </article>
       </section>
@@ -173,32 +168,30 @@ function History() {
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Search by role..."
-              className="h-10 w-full rounded-lg border border-line bg-slate-50 pl-9 pr-3 text-sm outline-none transition focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-100"
+              className="h-10 w-full rounded-lg border border-line bg-slate-50 pl-9 pr-3 text-sm outline-none focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-100"
             />
           </div>
 
-          <div className="relative">
-            <select
-              value={format}
-              onChange={(event) => setFormat(event.target.value)}
-              className="h-10 min-w-44 appearance-none rounded-lg border border-line bg-white pl-3 pr-9 text-sm font-medium text-slate-700 outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
-            >
-              <option value="All">All formats</option>
-              <option value="Technical">Technical</option>
-              <option value="Behavioral">Behavioral</option>
-              <option value="Mixed">Mixed</option>
-            </select>
-
-            <ChevronDown
-              size={16}
-              className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
-            />
-          </div>
+          <select
+            value={format}
+            onChange={(event) => setFormat(event.target.value)}
+            className="h-10 rounded-lg border border-line bg-white px-3 text-sm font-medium text-slate-700 outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
+          >
+            <option value="All">All formats</option>
+            <option value="Technical">Technical</option>
+            <option value="Behavioral">Behavioral</option>
+            <option value="Mixed">Mixed</option>
+          </select>
         </div>
 
-        {filteredInterviews.length ? (
+        {isLoading ? (
+          <div className="flex items-center justify-center gap-3 px-6 py-16 text-sm font-medium text-muted">
+            <Loader2 size={20} className="animate-spin" />
+            Loading interviews...
+          </div>
+        ) : filteredInterviews.length ? (
           <div className="overflow-x-auto">
-            <table className="w-full min-w-[800px] text-left">
+            <table className="w-full min-w-[900px] text-left">
               <thead>
                 <tr className="border-b border-line bg-slate-50/80">
                   <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -214,6 +207,9 @@ function History() {
                     Questions
                   </th>
                   <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">
                     Score
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-500">
@@ -225,7 +221,7 @@ function History() {
               <tbody>
                 {filteredInterviews.map((interview) => (
                   <tr
-                    key={interview.id}
+                    key={interview._id}
                     className="border-b border-line last:border-0 hover:bg-slate-50"
                   >
                     <td className="px-6 py-4">
@@ -236,10 +232,10 @@ function History() {
 
                         <div>
                           <p className="text-sm font-semibold text-ink">
-                            {interview.role}
+                            {interview.targetRole}
                           </p>
-                          <p className="mt-1 text-xs text-muted">
-                            Session #{interview.id}
+                          <p className="mt-1 font-mono text-xs text-muted">
+                            #{interview._id.slice(-6)}
                           </p>
                         </div>
                       </div>
@@ -248,42 +244,67 @@ function History() {
                     <td className="px-6 py-4">
                       <span
                         className={`rounded-md px-2.5 py-1 text-xs font-semibold ${formatStyle(
-                          interview.format,
+                          interview.interviewType,
                         )}`}
                       >
-                        {interview.format}
+                        {interview.interviewType}
                       </span>
                     </td>
 
                     <td className="px-6 py-4">
                       <span className="flex items-center gap-2 text-sm text-slate-600">
                         <CalendarDays size={15} />
-                        {interview.date}
+                        {formatDate(interview.createdAt)}
                       </span>
                     </td>
 
                     <td className="px-6 py-4 text-sm font-medium text-slate-700">
-                      {interview.questions}
+                      {interview.questionCount}
                     </td>
 
                     <td className="px-6 py-4">
                       <span
-                        className={`inline-flex min-w-14 justify-center rounded-md px-2.5 py-1 text-xs font-bold ${scoreStyle(
-                          interview.score,
-                        )}`}
+                        className={[
+                          "rounded-md px-2.5 py-1 text-xs font-semibold",
+                          interview.status === "completed"
+                            ? "bg-green-50 text-green-700"
+                            : "bg-amber-50 text-amber-700",
+                        ].join(" ")}
                       >
-                        {interview.score}/10
+                        {interview.status === "completed"
+                          ? "Completed"
+                          : "In progress"}
                       </span>
                     </td>
 
+                    <td className="px-6 py-4">
+                      {interview.overallScore !== null ? (
+                        <span
+                          className={`inline-flex min-w-14 justify-center rounded-md px-2.5 py-1 text-xs font-bold ${scoreStyle(
+                            interview.overallScore,
+                          )}`}
+                        >
+                          {Number(interview.overallScore).toFixed(1)}/10
+                        </span>
+                      ) : (
+                        <span className="text-sm text-slate-400">—</span>
+                      )}
+                    </td>
+
                     <td className="px-6 py-4 text-right">
-                      <Link
-                        to="/interview/report"
-                        className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-700 hover:text-brand-800"
-                      >
-                        <Eye size={16} />
-                        View
-                      </Link>
+                      {interview.status === "completed" ? (
+                        <Link
+                          to={`/interview/report/${interview._id}`}
+                          className="inline-flex items-center gap-1.5 text-sm font-semibold text-brand-700 hover:text-brand-800"
+                        >
+                          <Eye size={16} />
+                          View
+                        </Link>
+                      ) : (
+                        <span className="text-sm text-slate-400">
+                          Unavailable
+                        </span>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -297,7 +318,7 @@ function History() {
             <h2 className="mt-4 font-semibold text-ink">No interviews found</h2>
 
             <p className="mt-2 text-sm text-muted">
-              Try changing the search term or format filter.
+              Start a new session or change the filters.
             </p>
           </div>
         )}
