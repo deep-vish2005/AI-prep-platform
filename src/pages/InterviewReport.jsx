@@ -10,6 +10,8 @@ import {
   Sparkles,
   Target,
 } from "lucide-react";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
 import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import api from "../services/api";
@@ -65,7 +67,6 @@ function InterviewReport() {
 
   useEffect(() => {
     if (!interviewId) {
-      setIsLoadingReport(false);
       return;
     }
 
@@ -166,27 +167,187 @@ function InterviewReport() {
   }).format(new Date(results.completedAt));
 
   function downloadReport() {
-    const report = {
-      role: results.session.role,
-      experience: results.session.experience,
-      format: results.session.format,
-      score: overallScore.toFixed(1),
-      completedAt: results.completedAt,
-      answers: results.answers,
-    };
-
-    const reportFile = new Blob([JSON.stringify(report, null, 2)], {
-      type: "application/json",
+    const document = new jsPDF({
+      orientation: "portrait",
+      unit: "pt",
+      format: "a4",
     });
 
-    const downloadUrl = URL.createObjectURL(reportFile);
-    const link = document.createElement("a");
+    const pageWidth = document.internal.pageSize.getWidth();
+    const margin = 42;
 
-    link.href = downloadUrl;
-    link.download = "devprep-interview-report.json";
-    link.click();
+    document.setFillColor(15, 23, 42);
+    document.rect(0, 0, pageWidth, 105, "F");
 
-    URL.revokeObjectURL(downloadUrl);
+    document.setTextColor(255, 255, 255);
+    document.setFont("helvetica", "bold");
+    document.setFontSize(22);
+    document.text("DevPrep AI", margin, 42);
+
+    document.setFontSize(15);
+    document.text("Interview Session Report", margin, 70);
+
+    document.setFont("helvetica", "normal");
+    document.setFontSize(9);
+    document.setTextColor(203, 213, 225);
+    document.text(
+      `Generated ${new Date().toLocaleDateString("en-IN", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      })}`,
+      margin,
+      89,
+    );
+
+    document.setTextColor(15, 23, 42);
+
+    autoTable(document, {
+      startY: 125,
+      theme: "grid",
+      head: [["Session", "Details"]],
+      body: [
+        ["Target role", results.session.role],
+        ["Experience", results.session.experience],
+        ["Interview format", results.session.format],
+        ["Topics", results.session.topics?.join(", ") || "—"],
+        [
+          "Completed",
+          new Intl.DateTimeFormat("en-IN", {
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+          }).format(new Date(results.completedAt)),
+        ],
+        ["Overall score", `${overallScore.toFixed(1)}/10`],
+        ["Questions evaluated", String(results.answers.length)],
+      ],
+      styles: {
+        font: "helvetica",
+        fontSize: 9,
+        cellPadding: 7,
+        textColor: [30, 41, 59],
+        lineColor: [226, 232, 240],
+      },
+      headStyles: {
+        fillColor: [37, 99, 235],
+        textColor: [255, 255, 255],
+        fontStyle: "bold",
+      },
+      columnStyles: {
+        0: {
+          cellWidth: 135,
+          fontStyle: "bold",
+        },
+      },
+      margin: {
+        left: margin,
+        right: margin,
+      },
+    });
+
+    let currentY = document.lastAutoTable.finalY + 24;
+
+    document.setFont("helvetica", "bold");
+    document.setFontSize(14);
+    document.text("Topic performance", margin, currentY);
+
+    autoTable(document, {
+      startY: currentY + 10,
+      theme: "striped",
+      head: [["Topic", "Score"]],
+      body: competencyScores.map((topic) => [topic.name, `${topic.score}%`]),
+      styles: {
+        font: "helvetica",
+        fontSize: 9,
+        cellPadding: 7,
+        textColor: [30, 41, 59],
+      },
+      headStyles: {
+        fillColor: [30, 41, 59],
+        textColor: [255, 255, 255],
+      },
+      margin: {
+        left: margin,
+        right: margin,
+      },
+    });
+
+    currentY = document.lastAutoTable.finalY + 24;
+
+    document.setFont("helvetica", "bold");
+    document.setFontSize(14);
+    document.text("Question-by-question feedback", margin, currentY);
+
+    autoTable(document, {
+      startY: currentY + 10,
+      theme: "grid",
+      head: [["#", "Question", "Score", "Strength", "Next improvement"]],
+      body: results.answers.map((answer, index) => [
+        String(index + 1),
+        answer.question,
+        `${Number(answer.score).toFixed(1)}/10`,
+        answer.feedback.strength || "—",
+        answer.feedback.suggestion || "—",
+      ]),
+      styles: {
+        font: "helvetica",
+        fontSize: 8,
+        cellPadding: 6,
+        overflow: "linebreak",
+        valign: "top",
+        textColor: [30, 41, 59],
+        lineColor: [226, 232, 240],
+      },
+      headStyles: {
+        fillColor: [37, 99, 235],
+        textColor: [255, 255, 255],
+        fontStyle: "bold",
+      },
+      columnStyles: {
+        0: {
+          cellWidth: 22,
+          halign: "center",
+        },
+        1: {
+          cellWidth: 140,
+        },
+        2: {
+          cellWidth: 45,
+          halign: "center",
+        },
+      },
+      margin: {
+        left: margin,
+        right: margin,
+        bottom: 42,
+      },
+      didDrawPage: () => {
+        const pageHeight = document.internal.pageSize.getHeight();
+
+        document.setFont("helvetica", "normal");
+        document.setFontSize(8);
+        document.setTextColor(100, 116, 139);
+
+        document.text("Generated by DevPrep AI", margin, pageHeight - 20);
+
+        document.text(
+          `Page ${document.internal.getNumberOfPages()}`,
+          pageWidth - margin,
+          pageHeight - 20,
+          {
+            align: "right",
+          },
+        );
+      },
+    });
+
+    const safeRole = results.session.role
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
+
+    document.save(`devprep-${safeRole || "interview"}-report.pdf`);
   }
   if (isLoadingReport) {
     return (
@@ -198,6 +359,23 @@ function InterviewReport() {
             Loading interview report...
           </p>
         </div>
+      </div>
+    );
+  }
+
+  if (reportError) {
+    return (
+      <div className="mx-auto max-w-xl rounded-xl border border-red-200 bg-white p-6 text-center shadow-sm">
+        <h1 className="font-semibold text-ink">Unable to load report</h1>
+
+        <p className="mt-2 text-sm text-red-700">{reportError}</p>
+
+        <Link
+          to="/history"
+          className="mt-5 inline-flex rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white"
+        >
+          Return to History
+        </Link>
       </div>
     );
   }
@@ -243,7 +421,7 @@ function InterviewReport() {
             className="inline-flex h-10 items-center gap-2 rounded-lg border border-line bg-white px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50"
           >
             <Download size={17} />
-            Download
+            Download PDF
           </button>
 
           <Link

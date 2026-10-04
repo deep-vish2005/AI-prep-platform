@@ -7,6 +7,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import { useMemo, useState } from "react";
 
 function ChartTooltip({ active, payload, label }) {
   if (!active || !payload?.length) {
@@ -24,6 +25,30 @@ function ChartTooltip({ active, payload, label }) {
 }
 
 function PerformanceChart({ data = [] }) {
+  const [period, setPeriod] = useState("6-sessions");
+
+  const filteredData = useMemo(() => {
+    if (period === "all") {
+      return data;
+    }
+
+    if (period === "6-sessions") {
+      return data.slice(-6);
+    }
+
+    const numberOfDays = period === "30-days" ? 30 : 90;
+    const cutoff = new Date();
+
+    cutoff.setDate(cutoff.getDate() - numberOfDays);
+
+    return data.filter((item) => {
+      if (!item.date) {
+        return true;
+      }
+
+      return new Date(item.date) >= cutoff;
+    });
+  }, [data, period]);
   return (
     <section className="rounded-xl border border-line bg-white p-5 shadow-sm lg:p-6">
       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
@@ -38,19 +63,34 @@ function PerformanceChart({ data = [] }) {
 
         <select
           aria-label="Chart period"
-          defaultValue="6-sessions"
+          value={period}
+          onChange={(event) => setPeriod(event.target.value)}
           className="h-9 rounded-lg border border-line bg-white px-3 text-sm text-slate-600 outline-none focus:border-brand-500 focus:ring-4 focus:ring-brand-100"
         >
           <option value="6-sessions">Last 6 sessions</option>
           <option value="30-days">Last 30 days</option>
           <option value="3-months">Last 3 months</option>
+          <option value="all">All sessions</option>
         </select>
       </div>
 
-      <div className="mt-6 h-72 w-full">
+      {filteredData.length === 0 && (
+        <div className="mt-6 flex h-72 items-center justify-center rounded-lg border border-dashed border-line bg-slate-50">
+          <p className="text-sm font-medium text-muted">
+            No completed interviews in this period.
+          </p>
+        </div>
+      )}
+
+      <div
+        className={[
+          "mt-6 h-72 w-full",
+          filteredData.length === 0 ? "hidden" : "",
+        ].join(" ")}
+      >
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
-            data={data}
+            data={filteredData}
             margin={{ top: 10, right: 15, left: -20, bottom: 0 }}
           >
             <CartesianGrid

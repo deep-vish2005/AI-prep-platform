@@ -5,33 +5,21 @@ import {
   Save,
   UserRound,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 
 function Profile() {
   const { user, updateProfile } = useAuth();
 
   const [form, setForm] = useState({
-    name: "",
-    targetRole: "",
-    experienceLevel: "Beginner",
+    name: user?.name || "",
+    targetRole: user?.targetRole || "Software Engineer",
+    experienceLevel: user?.experienceLevel || "Beginner",
   });
 
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-
-  useEffect(() => {
-    if (!user) {
-      return;
-    }
-
-    setForm({
-      name: user.name || "",
-      targetRole: user.targetRole || "Software Engineer",
-      experienceLevel: user.experienceLevel || "Beginner",
-    });
-  }, [user]);
 
   function updateField(event) {
     const { name, value } = event.target;

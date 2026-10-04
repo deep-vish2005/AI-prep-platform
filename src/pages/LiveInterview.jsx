@@ -12,7 +12,7 @@ import {
   Target,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import api from "../services/api";
 
 const questions = [
@@ -134,7 +134,12 @@ function formatTime(totalSeconds) {
 
 function LiveInterview() {
   const navigate = useNavigate();
-  const [session] = useState(readSession);
+  const { interviewId: routeInterviewId } = useParams();
+  const [session, setSession] = useState(readSession);
+  const [isLoadingSession, setIsLoadingSession] = useState(
+    Boolean(routeInterviewId),
+  );
+  const [sessionLoadError, setSessionLoadError] = useState("");
   const [currentIndex, setCurrentIndex] = useState(0);
   const [answer, setAnswer] = useState("");
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
@@ -144,6 +149,62 @@ function LiveInterview() {
   const [submitError, setSubmitError] = useState("");
   const [submittedAnswers, setSubmittedAnswers] = useState([]);
   const [isSkipping, setIsSkipping] = useState(false);
+
+  useEffect(() => {
+    if (!routeInterviewId) {
+      return;
+    }
+
+    async function loadSession() {
+      try {
+        const response = await api.get(`/interviews/${routeInterviewId}`);
+
+        const interview = response.data.interview;
+
+        if (interview.status === "completed") {
+          navigate(`/interview/report/${interview._id}`, { replace: true });
+          return;
+        }
+
+        if (interview.status !== "in_progress") {
+          setSessionLoadError("This interview can no longer be resumed.");
+          return;
+        }
+
+        const loadedSession = {
+          interviewId: interview._id,
+          role: interview.targetRole,
+          experience: interview.experienceLevel,
+          format: interview.interviewType,
+          topics: interview.topics,
+          questionCount: interview.questionCount,
+          questions: interview.questions,
+        };
+
+        setSession(loadedSession);
+
+        sessionStorage.setItem(
+          "devprep-session",
+          JSON.stringify(loadedSession),
+        );
+
+        const nextQuestionIndex = interview.questions.findIndex(
+          (question) => !question.answer && !question.skipped,
+        );
+
+        setCurrentIndex(nextQuestionIndex >= 0 ? nextQuestionIndex : 0);
+      } catch (requestError) {
+        setSessionLoadError(
+          requestError.response?.data?.message ||
+            "Unable to load this interview session.",
+        );
+      } finally {
+        setIsLoadingSession(false);
+      }
+    }
+
+    loadSession();
+  }, [routeInterviewId, navigate]);
 
   const availableQuestions = useMemo(() => {
     const generatedQuestions =
@@ -297,6 +358,42 @@ function LiveInterview() {
     if (shouldExit) {
       navigate("/");
     }
+  }
+
+  if (isLoadingSession) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-canvas">
+        <div className="text-center">
+          <div className="mx-auto size-9 animate-spin rounded-full border-4 border-brand-100 border-t-brand-600" />
+
+          <p className="mt-4 text-sm font-medium text-muted">
+            Loading interview session...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (sessionLoadError) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-canvas p-6">
+        <div className="w-full max-w-md rounded-xl border border-red-200 bg-white p-6 text-center shadow-sm">
+          <h1 className="text-lg font-semibold text-ink">
+            Unable to resume interview
+          </h1>
+
+          <p className="mt-2 text-sm text-red-700">{sessionLoadError}</p>
+
+          <button
+            type="button"
+            onClick={() => navigate("/history")}
+            className="mt-5 rounded-lg bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-700"
+          >
+            Return to History
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (

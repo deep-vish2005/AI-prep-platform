@@ -20,7 +20,10 @@ function App() {
 
       <Route element={<ProtectedRoute />}>
         <Route path="/interview/live" element={<LiveInterview />} />
-
+        <Route
+          path="/interview/live/:interviewId"
+          element={<LiveInterview />}
+        />
         <Route element={<AppLayout />}>
           <Route index element={<Dashboard />} />
           <Route path="interview/new" element={<InterviewSetup />} />

@@ -69,6 +69,7 @@ export async function getAnalytics(request, response, next) {
       .slice(-12)
       .map((interview, index) => ({
         session: index + 1,
+        date: interview.completedAt || interview.createdAt,
         label: new Date(
           interview.completedAt || interview.createdAt,
         ).toLocaleDateString("en-US", {

@@ -206,7 +206,7 @@ function InterviewSetup() {
 
       sessionStorage.setItem("devprep-session", JSON.stringify(session));
 
-      navigate("/interview/live");
+      navigate(`/interview/live/${response.data.interview._id}`);
     } catch (requestError) {
       setStartError(
         requestError.response?.data?.message ||

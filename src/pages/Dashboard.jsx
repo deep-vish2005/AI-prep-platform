@@ -4,6 +4,7 @@ import {
   CalendarDays,
   CheckCircle2,
   ClipboardList,
+  Clock3,
   Play,
   Target,
   TrendingUp,
@@ -71,19 +72,17 @@ function Dashboard() {
 
   const recentInterviews = analytics?.recentInterviews || [];
 
-  const recommendedPractice = (analytics?.focusAreas || []).map(
-    (topic, index) => ({
-      id: topic.name,
-      title: topic.name,
-      category: "Recommended focus",
-      level: topic.priority,
-      progress: topic.percentage,
-      description:
-        topic.priority === "High"
-          ? "This is currently one of your weakest evaluated topics."
-          : "Additional practice can strengthen your confidence in this topic.",
-    }),
-  );
+  const recommendedPractice = (analytics?.focusAreas || []).map((topic) => ({
+    id: topic.name,
+    title: topic.name,
+    category: "Recommended focus",
+    level: topic.priority,
+    progress: topic.percentage,
+    description:
+      topic.priority === "High"
+        ? "This is currently one of your weakest evaluated topics."
+        : "Additional practice can strengthen your confidence in this topic.",
+  }));
   return (
     <div className="space-y-8">
       {error && (
@@ -213,12 +212,17 @@ function Dashboard() {
                   </td>
 
                   <td className="px-6 py-4">
-                    <span className="inline-flex items-center gap-1.5 text-sm font-medium text-green-700">
-                      <CheckCircle2 size={15} />
-                      {interview.status === "completed"
-                        ? "Completed"
-                        : "In progress"}
-                    </span>
+                    {interview.status === "completed" ? (
+                      <span className="inline-flex items-center gap-1.5 text-sm font-medium text-green-700">
+                        <CheckCircle2 size={15} />
+                        Completed
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 text-sm font-medium text-amber-700">
+                        <Clock3 size={15} />
+                        In progress
+                      </span>
+                    )}
                   </td>
 
                   <td className="px-6 py-4 text-right">
@@ -230,9 +234,12 @@ function Dashboard() {
                         View report
                       </Link>
                     ) : (
-                      <span className="text-sm text-slate-400">
-                        Unavailable
-                      </span>
+                      <Link
+                        to={`/interview/live/${interview.id}`}
+                        className="text-sm font-semibold text-amber-700 hover:text-amber-800"
+                      >
+                        Continue
+                      </Link>
                     )}
                   </td>
                 </tr>

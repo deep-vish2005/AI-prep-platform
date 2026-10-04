@@ -104,24 +104,62 @@ function Analytics() {
     },
   ];
   function downloadAnalytics() {
-    const data = {
-      generatedAt: new Date().toISOString(),
-      scoreProgression: analyticsScoreData,
-      formatDistribution: interviewFormats,
-      strongestTopics,
-      focusAreas,
-      monthlyActivity,
-    };
+    function csvCell(value) {
+      const normalizedValue =
+        value === null || value === undefined ? "" : String(value);
 
-    const file = new Blob([JSON.stringify(data, null, 2)], {
-      type: "application/json",
+      return `"${normalizedValue.replace(/"/g, '""')}"`;
+    }
+
+    const rows = [
+      ["Section", "Metric", "Label", "Value"],
+
+      ["Summary", "Total interviews", "", summary.totalInterviews],
+      ["Summary", "Completed interviews", "", summary.completedInterviews],
+      ["Summary", "Average score", "", summary.averageScore],
+      ["Summary", "Best score", "", summary.bestScore],
+      ["Summary", "Completion rate", "", `${summary.completionRate}%`],
+
+      ...analyticsScoreData.map((item) => [
+        "Score progression",
+        "Interview score",
+        item.label,
+        item.score,
+      ]),
+
+      ...interviewFormats.map((item) => [
+        "Format distribution",
+        item.name,
+        `${item.count || 0} interviews`,
+        `${item.value}%`,
+      ]),
+
+      ...(analytics?.topicPerformance || []).map((item) => [
+        "Topic performance",
+        item.name,
+        `${item.questionsEvaluated} questions evaluated`,
+        `${item.percentage}%`,
+      ]),
+
+      ...monthlyActivity.map((item) => [
+        "Monthly activity",
+        "Completed interviews",
+        item.month,
+        item.interviews,
+      ]),
+    ];
+
+    const csv = rows.map((row) => row.map(csvCell).join(",")).join("\n");
+
+    const file = new Blob([`\uFEFF${csv}`], {
+      type: "text/csv;charset=utf-8;",
     });
 
     const url = URL.createObjectURL(file);
     const link = document.createElement("a");
 
     link.href = url;
-    link.download = "devprep-analytics.json";
+    link.download = "devprep-performance-analytics.csv";
     link.click();
 
     URL.revokeObjectURL(url);
@@ -155,7 +193,7 @@ function Analytics() {
           className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-line bg-white px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50"
         >
           <Download size={17} />
-          Export Analytics
+          Export CSV
         </button>
       </section>
 

@@ -7,7 +7,7 @@ import {
   Search,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import api from "../services/api";
 
 function scoreStyle(score) {
@@ -43,8 +43,9 @@ function formatDate(date) {
 }
 
 function History() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [interviews, setInterviews] = useState([]);
-  const [query, setQuery] = useState("");
+  const query = searchParams.get("q") || "";
   const [format, setFormat] = useState("All");
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
@@ -166,7 +167,20 @@ function History() {
             <input
               type="search"
               value={query}
-              onChange={(event) => setQuery(event.target.value)}
+              onChange={(event) => {
+                const value = event.target.value;
+                const nextParams = new URLSearchParams(searchParams);
+
+                if (value) {
+                  nextParams.set("q", value);
+                } else {
+                  nextParams.delete("q");
+                }
+
+                setSearchParams(nextParams, {
+                  replace: true,
+                });
+              }}
               placeholder="Search by role..."
               className="h-10 w-full rounded-lg border border-line bg-slate-50 pl-9 pr-3 text-sm outline-none focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-100"
             />
@@ -301,9 +315,13 @@ function History() {
                           View
                         </Link>
                       ) : (
-                        <span className="text-sm text-slate-400">
-                          Unavailable
-                        </span>
+                        <Link
+                          to={`/interview/live/${interview._id}`}
+                          className="inline-flex items-center gap-1.5 text-sm font-semibold text-amber-700 hover:text-amber-800"
+                        >
+                          <Play size={16} />
+                          Continue
+                        </Link>
                       )}
                     </td>
                   </tr>
