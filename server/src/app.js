@@ -12,6 +12,14 @@ dotenv.config();
 const app = express();
 const isProduction = process.env.NODE_ENV === "production";
 
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const currentFile = fileURLToPath(import.meta.url);
+const currentDirectory = path.dirname(currentFile);
+
+const frontendDistPath = path.resolve(currentDirectory, "../../dist");
+
 if (isProduction) {
   app.set("trust proxy", 1);
 }
@@ -93,6 +101,19 @@ app.use("/api/auth/register", authLimiter);
 app.use("/api/auth", authRoutes);
 app.use("/api/interviews", interviewRoutes);
 app.use("/api/analytics", analyticsRoutes);
+
+if (isProduction) {
+  app.use(express.static(frontendDistPath));
+
+  app.use((request, response, next) => {
+    if (request.method !== "GET" || request.path.startsWith("/api")) {
+      next();
+      return;
+    }
+
+    response.sendFile(path.join(frontendDistPath, "index.html"));
+  });
+}
 
 app.use((request, response) => {
   response.status(404).json({
