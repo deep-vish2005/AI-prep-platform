@@ -6,7 +6,7 @@ An AI-powered mock interview platform that generates personalized interview ques
 
 ## Live Demo
 
-**Application:** [Add Render URL after deployment](https://YOUR-RENDER-URL.onrender.com)
+**Application:** https://ai-prep-platform-53jd.onrender.com
 
 **Repository:** [github.com/deep-vish2005/AI-prep-platform](https://github.com/deep-vish2005/AI-prep-platform)
 
